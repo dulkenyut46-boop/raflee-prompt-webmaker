@@ -1,0 +1,6 @@
+{
+  "name": "Raflee Prompt Maker",
+  "description": "Raflee Prompt Maker - Generator prompt web app cerdas dan daftar pengecekan testing otomatis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
