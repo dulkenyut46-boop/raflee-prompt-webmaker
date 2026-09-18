@@ -25,7 +25,7 @@ export default function App() {
     localStorage.setItem('prd_users', JSON.stringify(users));
   }, [users]);
 
-  // Current logged in user (starts with Admin Utama for effortless instant evaluation)
+  // Current logged in user (must pass through login/registration page to enter main page)
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
       const savedUser = localStorage.getItem('prd_current_user');
@@ -33,7 +33,7 @@ export default function App() {
     } catch {
       // Fallback
     }
-    return INITIAL_USERS[0];
+    return null;
   });
 
   // Active navigation tab
@@ -67,14 +67,29 @@ export default function App() {
     setActiveTab('generator');
   };
 
+  const handleRegister = (newUser: User) => {
+    setUsers((prev) => {
+      const updated = [...prev, newUser];
+      localStorage.setItem('prd_users', JSON.stringify(updated));
+      return updated;
+    });
+    handleLogin(newUser);
+  };
+
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('prd_current_user');
   };
 
-  // If user is not logged in, show the Login screen
+  // If user is not logged in, show the Login/Registration screen
   if (!currentUser) {
-    return <LoginModal users={users} onLogin={handleLogin} />;
+    return (
+      <LoginModal
+        users={users}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
+    );
   }
 
   return (

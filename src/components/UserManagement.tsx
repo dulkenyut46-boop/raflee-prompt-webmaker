@@ -186,6 +186,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
                           )}
                         </p>
                         <p className="text-xs text-slate-400">{u.email}</p>
+                        {u.phone && <p className="text-[11px] text-slate-500 font-mono mt-0.5">📱 {u.phone}</p>}
                       </div>
                     </div>
                   </td>
