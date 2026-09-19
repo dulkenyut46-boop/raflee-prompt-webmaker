@@ -19,7 +19,7 @@ async function startServer() {
     res.json({ status: 'ok' });
   });
 
-  // Checklist Generation Endpoint using Gemini API
+  // Checklist Generation Endpoint using Gemini API with resilient fallback
   app.post('/api/generate-checklist', async (req: Request, res: Response) => {
     const {
       productName,
@@ -31,23 +31,27 @@ async function startServer() {
       problem,
       language = 'Bahasa Indonesia',
       currency = 'IDR'
-    } = req.body;
+    } = req.body || {};
 
-    if (!productName) {
-      return res.status(400).json({ error: 'Nama produk harus diisi terlebih dahulu.' });
-    }
+    const effectiveProductName = productName?.trim() || 'Aplikasi Web';
+    const effectiveProductType = productType?.trim() || 'Web App';
+    const effectiveIndustry = industry?.trim() || 'Umum';
+    const effectiveTargetUsers = targetUsers?.trim() || 'Pengguna / Pengunjung';
+    const effectiveCoreModules = coreModules?.trim() || 'Dashboard, Login, Formulir Data, Laporan, Pengaturan';
+    const effectiveValueProposition = valueProposition?.trim() || 'Solusi efisien dan mudah digunakan';
+    const effectiveProblem = problem?.trim() || 'Mempermudah pekerjaan dan pengelolaan data';
 
     const apiKey = process.env.GEMINI_API_KEY;
 
     // Prompt for Gemini
     const prompt = `Buatkan daftar pengecekan (checklist) yang sangat mudah dipahami oleh orang awam untuk mengevaluasi/mengetes hasil dari proyek ini berdasarkan detail berikut:
-Nama Proyek/Dokumen: ${productName}
-Jenis Output: ${productType || 'Web App'}
-Industri: ${industry || 'Umum'}
-Target Pengguna/Pembaca: ${targetUsers || 'Pengguna'}
-Bagian/Komponen Utama: ${coreModules || 'Dashboard, Login, Settings'}
-Nilai Tambah (Value Proposition): ${valueProposition || 'Solusi efisien'}
-Masalah yang Diselesaikan: ${problem || 'Mempermudah pekerjaan'}
+Nama Proyek/Dokumen: ${effectiveProductName}
+Jenis Output: ${effectiveProductType}
+Industri: ${effectiveIndustry}
+Target Pengguna/Pembaca: ${effectiveTargetUsers}
+Bagian/Komponen Utama: ${effectiveCoreModules}
+Nilai Tambah (Value Proposition): ${effectiveValueProposition}
+Masalah yang Diselesaikan: ${effectiveProblem}
 Bahasa: ${language}
 Mata Uang: ${currency}
 
@@ -61,14 +65,14 @@ Persyaratan:
    - question: cara mengetes dengan bahasa sehari-hari ramah pemula
    - suggestion: perintah/prompt perbaikan yang siap dicopy-paste ke AI builder/developer jika ada error atau kekurangan
 4. Pastikan bahasa yang digunakan sangat ramah untuk pemula (awam-friendly), hindari istilah teknis yang terlalu rumit.
-5. Sesuaikan konteks pengecekan dengan jenis output "${productType || 'Web App'}".
+5. Sesuaikan konteks pengecekan dengan jenis output "${effectiveProductType}".
 6. Gunakan bahasa ${language}.
 7. Kembalikan HANYA array JSON objek sesuai schema.`;
 
     if (apiKey) {
       try {
         const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
+        const aiPromise = ai.models.generateContent({
           model: 'gemini-3.8-flash',
           contents: prompt,
           config: {
@@ -90,7 +94,13 @@ Persyaratan:
           }
         });
 
-        const text = response.text || '[]';
+        // 6 second timeout to prevent blocking user if Gemini API has quota delay
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Gemini API timeout')), 6000)
+        );
+
+        const response: any = await Promise.race([aiPromise, timeoutPromise]);
+        const text = response?.text || '[]';
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const items = parsed.map((item, idx) => ({
@@ -105,7 +115,7 @@ Persyaratan:
           return res.json({ items });
         }
       } catch (err) {
-        console.error('Gemini API Error, falling back to smart generator:', err);
+        console.warn('Gemini API notice, serving smart generator:', err);
       }
     }
 
@@ -124,18 +134,18 @@ Persyaratan:
     ];
 
     const generatedItems = [];
-    const modulesList = (coreModules || 'Dashboard, Formulir Data, Laporan, Pengaturan')
+    const modulesList = effectiveCoreModules
       .split(/[,;\n]/)
       .map((s: string) => s.trim())
       .filter(Boolean);
 
     for (let i = 1; i <= 50; i++) {
       const catObj = defaultCategories[(i - 1) % defaultCategories.length];
-      const targetModule = modulesList[(i - 1) % modulesList.length] || productName;
+      const targetModule = modulesList[(i - 1) % modulesList.length] || effectiveProductName;
       
       let featureName = `${targetModule} - Bagian ${Math.ceil(i / defaultCategories.length)}`;
-      let testQuestion = `Coba buka dan uji ${featureName} pada ${productName}. Apakah tampilannya rapi dan tombol-tombolnya merespons dengan cepat?`;
-      let fixPrompt = `Tolong perbaiki dan sempurnakan modul ${featureName} pada aplikasi ${productName}. Pastikan UI terlihat modern, tidak ada lag, dan data tersimpan dengan benar.`;
+      let testQuestion = `Coba buka dan uji ${featureName} pada ${effectiveProductName}. Apakah tampilannya rapi dan tombol-tombolnya merespons dengan cepat?`;
+      let fixPrompt = `Tolong perbaiki dan sempurnakan modul ${featureName} pada aplikasi ${effectiveProductName}. Pastikan UI terlihat modern, tidak ada lag, dan data tersimpan dengan benar.`;
 
       if (catObj.name === 'Tampilan & Responsif') {
         featureName = `Desain Responsif ${targetModule}`;
