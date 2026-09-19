@@ -25,9 +25,9 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'admin_default',
     name: 'Administrator',
-    email: 'admin@app.com',
+    email: 'saidunyamain@gmail.com',
     phone: '081234567890',
-    password: 'admin123',
+    password: '12345678',
     role: 'admin',
     createdAt: '2026-01-01T00:00:00.000Z'
   },

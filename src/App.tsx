@@ -12,22 +12,35 @@ import { useTheme } from './context/ThemeContext';
 
 export default function App() {
   const { themeConfig } = useTheme();
-  // Users state with local storage persistence and migration from old demo names
+  // Users state with local storage persistence and guaranteed admin setup
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const saved = localStorage.getItem('prd_users');
       if (saved) {
-        const parsed: User[] = JSON.parse(saved);
-        // Replace old demo names if cached previously
-        const hasOldDemo = parsed.some(
-          (u) => u.name === 'Admin Utama' || u.name === 'User Biasa'
+        let parsed: User[] = JSON.parse(saved);
+        // Filter out old legacy demo accounts if any
+        parsed = parsed.filter(
+          (u) => u.name !== 'Admin Utama' && u.name !== 'User Biasa'
         );
-        if (hasOldDemo) {
-          localStorage.setItem('prd_users', JSON.stringify(INITIAL_USERS));
-          return INITIAL_USERS;
+
+        // Ensure admin with saidunyamain@gmail.com exists with password 12345678
+        const adminIndex = parsed.findIndex(
+          (u) => u.role === 'admin' || u.email === 'saidunyamain@gmail.com' || u.email === 'admin@app.com'
+        );
+        if (adminIndex !== -1) {
+          parsed[adminIndex] = {
+            ...parsed[adminIndex],
+            email: 'saidunyamain@gmail.com',
+            password: '12345678',
+            role: 'admin'
+          };
+        } else {
+          parsed.unshift(INITIAL_USERS[0]);
         }
+        localStorage.setItem('prd_users', JSON.stringify(parsed));
         return parsed;
       }
+      localStorage.setItem('prd_users', JSON.stringify(INITIAL_USERS));
       return INITIAL_USERS;
     } catch {
       return INITIAL_USERS;

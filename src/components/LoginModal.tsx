@@ -210,14 +210,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin, onRegist
     }
   };
 
-  // Prefill login input fields with standard editable account credentials
-  const handlePrefillAccount = (email: string, pass: string) => {
-    setLoginMethod('password');
-    setLoginEmail(email);
-    setLoginPassword(pass);
-    setError('');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-6 relative overflow-hidden font-sans">
       {/* Top Bar with Theme Toggle */}
@@ -604,57 +596,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin, onRegist
                         </button>
                       </form>
                     )}
-
-                    {/* Akun Masuk Standar (Dapat Diedit) */}
-                    <div className="mt-6 pt-5 border-t border-slate-100">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                          Akun Masuk Standar
-                        </span>
-                        <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-semibold">
-                          Dapat Diedit
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        {users.slice(0, 2).map((u) => (
-                          <div
-                            key={u.id}
-                            className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between gap-3 text-xs"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-slate-800 truncate">{u.name}</span>
-                                <span
-                                  className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                                    u.role === 'admin'
-                                      ? 'bg-amber-100 text-amber-800'
-                                      : 'bg-indigo-100 text-indigo-800'
-                                  }`}
-                                >
-                                  {u.role === 'admin' ? 'Admin' : 'Pengguna Biasa'}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
-                                {u.email} • Pass: <span className="text-slate-700 font-semibold">{u.password || '••••'}</span>
-                              </p>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => handlePrefillAccount(u.email, u.password || '')}
-                              className="shrink-0 px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
-                            >
-                              Gunakan
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      <p className="text-[10px] text-slate-400 mt-2 text-center">
-                        Nama, email, dan password standar di atas dapat diedit kapan saja setelah masuk.
-                      </p>
-                    </div>
                   </div>
                 )}
               </>
