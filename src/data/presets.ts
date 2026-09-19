@@ -22,8 +22,24 @@ export const INITIAL_FORM_STATE: FormState = {
 };
 
 export const INITIAL_USERS: User[] = [
-  { id: '1', name: 'Admin Utama', email: 'admin@prdgen.com', password: 'admin', role: 'admin' },
-  { id: '2', name: 'User Biasa', email: 'user@prdgen.com', password: 'user', role: 'user' }
+  {
+    id: 'admin_default',
+    name: 'Administrator',
+    email: 'admin@app.com',
+    phone: '081234567890',
+    password: 'admin123',
+    role: 'admin',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'user_default',
+    name: 'Pengguna Standar',
+    email: 'user@app.com',
+    phone: '089876543210',
+    password: 'user123',
+    role: 'user',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  }
 ];
 
 export const STEPS: StepInfo[] = [

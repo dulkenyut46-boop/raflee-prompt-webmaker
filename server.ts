@@ -1,13 +1,12 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Safe directory resolution compatible with both tsx dev and esbuild CJS bundle
+const rootDir = process.cwd();
 
 async function startServer() {
   const app = express();

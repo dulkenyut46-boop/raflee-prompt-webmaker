@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, CheckSquare, User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { Sparkles, CheckSquare, User as UserIcon, Settings, LogOut, ShieldCheck, UserCheck, KeyRound } from 'lucide-react';
 import { User } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -9,13 +9,15 @@ interface NavbarProps {
   activeTab: 'generator' | 'checklist' | 'settings';
   setActiveTab: (tab: 'generator' | 'checklist' | 'settings') => void;
   onLogout: () => void;
+  onOpenProfile: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   user,
   activeTab,
   setActiveTab,
-  onLogout
+  onLogout,
+  onOpenProfile
 }) => {
   const { themeConfig } = useTheme();
 
@@ -41,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Nav Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Color Theme Switcher */}
           <div className="flex items-center">
             <ThemeToggle />
@@ -60,34 +62,59 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* User profile & actions pill */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full border border-slate-200">
-            <div className={`w-6 h-6 ${themeConfig.badgeBg} rounded-full flex items-center justify-center transition-colors`}>
-              <UserIcon size={14} className={themeConfig.primaryText} />
-            </div>
-            <span className="text-xs font-bold text-slate-700 max-w-[100px] sm:max-w-[140px] truncate">
-              {user.name}
-            </span>
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-slate-100 rounded-full border border-slate-200">
+            {/* Clickable Profile & Role Button */}
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity cursor-pointer text-left"
+              title="Klik untuk Edit Profil & Password"
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                user.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+              }`}>
+                {user.role === 'admin' ? <ShieldCheck size={14} /> : <UserIcon size={14} />}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-slate-800 max-w-[90px] sm:max-w-[130px] truncate leading-tight">
+                  {user.name}
+                </span>
+                <span className="text-[9px] font-semibold text-slate-500 leading-none">
+                  {user.role === 'admin' ? 'Admin' : 'Pengguna Biasa'}
+                </span>
+              </div>
+            </button>
 
+            {/* Tombol Edit Profil / Sandi */}
+            <button
+              onClick={onOpenProfile}
+              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+              title="Edit Akun & Password"
+            >
+              <KeyRound size={15} />
+            </button>
+
+            {/* Tombol Admin Manajemen User */}
             {user.role === 'admin' && (
               <button
                 onClick={() => setActiveTab(activeTab === 'settings' ? 'generator' : 'settings')}
-                className={`ml-1 p-1 rounded-md transition-colors cursor-pointer ${
+                className={`p-1 rounded-md transition-colors cursor-pointer ${
                   activeTab === 'settings'
                     ? `${themeConfig.primaryText} ${themeConfig.lightBg}`
                     : `text-slate-400 hover:${themeConfig.primaryText}`
                 }`}
-                title="Pengaturan User"
+                title="Kelola Semua Pengguna"
               >
-                <Settings size={16} />
+                <Settings size={15} />
               </button>
             )}
 
+            {/* Logout Button */}
             <button
               onClick={onLogout}
-              className="ml-1 p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-              title="Keluar"
+              className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+              title="Keluar (Logout)"
             >
-              <LogOut size={16} />
+              <LogOut size={15} />
             </button>
           </div>
         </div>

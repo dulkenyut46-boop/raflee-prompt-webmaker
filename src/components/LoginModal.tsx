@@ -210,12 +210,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin, onRegist
     }
   };
 
-  // Quick demo login
-  const handleQuickLogin = (role: 'admin' | 'user') => {
-    const target = users.find((u) => u.role === role) || users[0];
-    if (target) {
-      onLogin(target);
-    }
+  // Prefill login input fields with standard editable account credentials
+  const handlePrefillAccount = (email: string, pass: string) => {
+    setLoginMethod('password');
+    setLoginEmail(email);
+    setLoginPassword(pass);
+    setError('');
   };
 
   return (
@@ -605,29 +605,55 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin, onRegist
                       </form>
                     )}
 
-                    {/* Quick Demo Login Helpers */}
+                    {/* Akun Masuk Standar (Dapat Diedit) */}
                     <div className="mt-6 pt-5 border-t border-slate-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center mb-2.5">
-                        Akses Cepat (Akun Demo)
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleQuickLogin('admin')}
-                          className={`flex items-center justify-center gap-2 py-2 px-3 bg-slate-50 ${themeConfig.lightBgHover} border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-all cursor-pointer`}
-                        >
-                          <ShieldCheck size={14} className={themeConfig.primaryText} />
-                          <span>Admin Utama</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleQuickLogin('user')}
-                          className={`flex items-center justify-center gap-2 py-2 px-3 bg-slate-50 ${themeConfig.lightBgHover} border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition-all cursor-pointer`}
-                        >
-                          <UserCheck size={14} className="text-slate-500" />
-                          <span>User Biasa</span>
-                        </button>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                          Akun Masuk Standar
+                        </span>
+                        <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-semibold">
+                          Dapat Diedit
+                        </span>
                       </div>
+
+                      <div className="space-y-2">
+                        {users.slice(0, 2).map((u) => (
+                          <div
+                            key={u.id}
+                            className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-slate-800 truncate">{u.name}</span>
+                                <span
+                                  className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                                    u.role === 'admin'
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : 'bg-indigo-100 text-indigo-800'
+                                  }`}
+                                >
+                                  {u.role === 'admin' ? 'Admin' : 'Pengguna Biasa'}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
+                                {u.email} • Pass: <span className="text-slate-700 font-semibold">{u.password || '••••'}</span>
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handlePrefillAccount(u.email, u.password || '')}
+                              className="shrink-0 px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
+                            >
+                              Gunakan
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-[10px] text-slate-400 mt-2 text-center">
+                        Nama, email, dan password standar di atas dapat diedit kapan saja setelah masuk.
+                      </p>
                     </div>
                   </div>
                 )}

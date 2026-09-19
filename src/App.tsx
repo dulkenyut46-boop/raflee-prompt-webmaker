@@ -7,15 +7,28 @@ import { PromptWizard } from './components/PromptWizard';
 import { PromptPreviewPanel } from './components/PromptPreviewPanel';
 import { ChecklistView } from './components/ChecklistView';
 import { UserManagement } from './components/UserManagement';
+import { ProfileModal } from './components/ProfileModal';
 import { useTheme } from './context/ThemeContext';
 
 export default function App() {
   const { themeConfig } = useTheme();
-  // Users state with local storage persistence
+  // Users state with local storage persistence and migration from old demo names
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const saved = localStorage.getItem('prd_users');
-      return saved ? JSON.parse(saved) : INITIAL_USERS;
+      if (saved) {
+        const parsed: User[] = JSON.parse(saved);
+        // Replace old demo names if cached previously
+        const hasOldDemo = parsed.some(
+          (u) => u.name === 'Admin Utama' || u.name === 'User Biasa'
+        );
+        if (hasOldDemo) {
+          localStorage.setItem('prd_users', JSON.stringify(INITIAL_USERS));
+          return INITIAL_USERS;
+        }
+        return parsed;
+      }
+      return INITIAL_USERS;
     } catch {
       return INITIAL_USERS;
     }
@@ -29,7 +42,14 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
       const savedUser = localStorage.getItem('prd_current_user');
-      if (savedUser) return JSON.parse(savedUser);
+      if (savedUser) {
+        const parsed: User = JSON.parse(savedUser);
+        if (parsed.name === 'Admin Utama' || parsed.name === 'User Biasa') {
+          localStorage.removeItem('prd_current_user');
+          return null;
+        }
+        return parsed;
+      }
     } catch {
       // Fallback
     }
@@ -38,6 +58,9 @@ export default function App() {
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<'generator' | 'checklist' | 'settings'>('generator');
+
+  // Profile & Password modal state
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Form State with local persistence
   const [formState, setFormState] = useState<FormState>(() => {
@@ -81,6 +104,16 @@ export default function App() {
     localStorage.removeItem('prd_current_user');
   };
 
+  const handleUpdateCurrentUser = (updatedUser: User) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('prd_current_user', JSON.stringify(updatedUser));
+    setUsers((prev) => {
+      const next = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+      localStorage.setItem('prd_users', JSON.stringify(next));
+      return next;
+    });
+  };
+
   // If user is not logged in, show the Login/Registration screen
   if (!currentUser) {
     return (
@@ -100,11 +133,12 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogout={handleLogout}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {activeTab === 'settings' && currentUser.role === 'admin' ? (
+        {activeTab === 'settings' ? (
           <UserManagement
             users={users}
             setUsers={setUsers}
@@ -145,6 +179,16 @@ export default function App() {
         <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] ${themeConfig.blobBg} rounded-full blur-[120px] transition-all duration-700`} />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-slate-200/50 rounded-full blur-[120px]" />
       </div>
+
+      {/* Profile & Password Edit Modal */}
+      {currentUser && (
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          user={currentUser}
+          onUpdateUser={handleUpdateCurrentUser}
+        />
+      )}
     </div>
   );
 }
